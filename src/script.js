@@ -3,6 +3,12 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
 
+
+//Texture Loader 
+const loader =new THREE.TextureLoader()
+const height =loader.load('shape3.png')
+const texture =loader.load('/texture.jpg')
+// const alpha =loader.load('/alpha.jpg')
 // Debug
 const gui = new dat.GUI()
 
@@ -13,24 +19,35 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 // Objects
-const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
+const geometry = new THREE.PlaneBufferGeometry(3, 3, 64, 64)
 
 // Materials
+const material = new THREE.MeshStandardMaterial({ 
+    color: 'white',
+    map: texture,
+    displacementMap: height
+})
 
-const material = new THREE.MeshBasicMaterial()
-material.color = new THREE.Color(0xff0000)
-
-// Mesh
-const sphere = new THREE.Mesh(geometry,material)
-scene.add(sphere)
+const plane = new THREE.Mesh(geometry,material)
+scene.add(plane)
+plane.rotation.x = 181
+gui.add(plane.rotation, 'x').min(0).max(600)
 
 // Lights
-
-const pointLight = new THREE.PointLight(0xffffff, 0.1)
+const pointLight = new THREE.PointLight(0xffffff, 3)
 pointLight.position.x = 2
 pointLight.position.y = 3
 pointLight.position.z = 4
 scene.add(pointLight)
+
+gui.add(pointLight.position, 'x')
+gui.add(pointLight.position, 'y')
+gui.add(pointLight.position, 'z')
+
+const col = { color: "#00ff00"}
+gui.addColor(col, 'color').onChange(() => { 
+    pointLight.color.set(col.color)
+})
 
 /**
  * Sizes
@@ -53,6 +70,7 @@ window.addEventListener('resize', () =>
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
 })
 
 /**
@@ -62,7 +80,8 @@ window.addEventListener('resize', () =>
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 0
 camera.position.y = 0
-camera.position.z = 2
+camera.position.z = 3
+
 scene.add(camera)
 
 // Controls
@@ -73,7 +92,8 @@ scene.add(camera)
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    alpha: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -81,16 +101,16 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 /**
  * Animate
  */
-
 const clock = new THREE.Clock()
 
 const tick = () =>
 {
-
     const elapsedTime = clock.getElapsedTime()
 
+    plane.rotation.z= .15 * elapsedTime
+
     // Update objects
-    sphere.rotation.y = .5 * elapsedTime
+    // Removed the line that causes the plane to rotate
 
     // Update Orbital Controls
     // controls.update()
